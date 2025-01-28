@@ -1,0 +1,115 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# Logs
+*.log
+logs/
+log/
+
+# Local Development
+data/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+.docker/
+docker/data/
+
+# Spark
+spark-warehouse/
+metastore_db/
+*.jar
+derby.log
+checkpoint/
+spark-checkpoints/
+spark-events/
+.spark-virtual-env/
+
+# Kafka
+kafka-logs/
+zookeeper-data/
+kafka-data/
+
+# Database
+*.sqlite3
+*.db
+
+# System Files
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.temp
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Node (if using any Node.js tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Miscellaneous
+*.class
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+.pytest_cache/
+htmlcov/
+.coverage
+coverage/
+.tox/
+.coverage.*
+*.cover
+*.pb
+.hypothesis/
