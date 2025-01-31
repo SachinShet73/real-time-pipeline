@@ -1,8 +1,5 @@
 import psycopg2
 import logging
-import sys
-sys.path.append(".")
-from config.config import PostgresConfig
 
 # Configure logging
 logging.basicConfig(
@@ -11,54 +8,55 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def setup_database(config: PostgresConfig):
-    """Create necessary tables in PostgreSQL"""
-    # SQL to create the sensor metrics table 
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS sensor_metrics (
-        id SERIAL PRIMARY KEY,
-        window_start TIMESTAMP NOT NULL,
-        window_end TIMESTAMP NOT NULL,
-        sensor_id VARCHAR(50) NOT NULL,
-        avg_temperature DOUBLE PRECISION,
-        max_temperature DOUBLE PRECISION,
-        min_temperature DOUBLE PRECISION,
-        avg_humidity DOUBLE PRECISION,
-        avg_pressure DOUBLE PRECISION,
-        reading_count INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+def verify_database_connection():
+    """Verify database connection and schema"""
+    params = {
+        'dbname': 'pipeline_db',
+        'user': 'dataeng',
+        'password': 'password123',
+        'host': '127.0.0.1',
+        'port': '5432'
+    }
     
-    -- Create index on window_start and sensor_id for better query performance
-    CREATE INDEX IF NOT EXISTS idx_sensor_metrics_window 
-    ON sensor_metrics(window_start, sensor_id);
-    """
+    logger.info("Attempting to connect to PostgreSQL...")
     
-    conn = None
     try:
-        logger.info("Connecting to PostgreSQL database...")
-        conn = psycopg2.connect(
-            dbname=config.database,
-            user=config.user,
-            password=config.password,
-            host=config.host,
-            port=config.port
-        )
+        conn = psycopg2.connect(**params)
+        logger.info("Successfully connected to PostgreSQL")
         
-        # Create table
         with conn.cursor() as cur:
-            cur.execute(create_table_sql)
+            # Create the table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS sensor_metrics (
+                    id SERIAL PRIMARY KEY,
+                    window_start TIMESTAMP NOT NULL,
+                    window_end TIMESTAMP NOT NULL,
+                    sensor_id VARCHAR(50) NOT NULL,
+                    avg_temperature DOUBLE PRECISION,
+                    max_temperature DOUBLE PRECISION,
+                    min_temperature DOUBLE PRECISION,
+                    avg_humidity DOUBLE PRECISION,
+                    avg_pressure DOUBLE PRECISION,
+                    reading_count INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # Create the index
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sensor_metrics_window 
+                ON sensor_metrics(window_start, sensor_id)
+            """)
+            
+            conn.commit()
+            logger.info("Successfully created sensor_metrics table and index")
         
-        conn.commit()
-        logger.info("Successfully created sensor_metrics table")
+        conn.close()
+        return True
         
     except Exception as e:
-        logger.error(f"Error setting up database: {e}")
+        logger.error(f"Database connection failed: {e}")
         raise
-    finally:
-        if conn:
-            conn.close()
 
 if __name__ == "__main__":
-    config = PostgresConfig()
-    setup_database(config)
+    verify_database_connection()

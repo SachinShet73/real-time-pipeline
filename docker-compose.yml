@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
@@ -56,18 +54,25 @@ services:
       - "8081:8081"
     command: "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"
 
-  postgres:
+  db:
     image: postgres:15-alpine
-    hostname: postgres
     container_name: postgres
     environment:
-      POSTGRES_USER: dataeng
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: pipeline_db
+      - POSTGRES_USER=dataeng
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=pipeline_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    command: 
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "ssl=off"
 
 volumes:
   postgres_data:
