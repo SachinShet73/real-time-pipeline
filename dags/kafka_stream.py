@@ -40,10 +40,15 @@ def format_data(res):
 
 def stream_data():
     import json
+
+    from kafka import KafkaProducer
+    import time 
+
     res = get_data()
     res = format_data(res)
     print(json.dumps(res,indent=3))
     
+    producer = KafkaProducer(bootstrap_servers=['broker'])
 
 """ with DAG('user_automation',
          default_args=default_args,
