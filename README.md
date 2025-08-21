@@ -505,40 +505,9 @@ locust -f tests/load_test.py --host=http://localhost:5001
 5. **Push to branch**: `git push origin feature/amazing-feature`
 6. **Open Pull Request**
 
-### Development Guidelines
-- Follow PEP 8 for Python code
-- Use meaningful commit messages
-- Add comments for complex logic
-- Update documentation for new features
-- Test changes before submitting PR
-
-## 📄 License
-
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Apache Software Foundation** for Kafka, Spark, Cassandra, and Airflow
-- **Random User API** for providing realistic test data
-- **Docker** and containerization community
-- **Open source contributors** who make projects like this possible
-
-## 📞 Support
-
-![Issues](https://img.shields.io/badge/issues-welcome-blue?style=flat-square)
-![Discussions](https://img.shields.io/badge/discussions-enabled-blue?style=flat-square)
-
-- **Bug Reports**: [Create an issue](https://github.com/yourusername/real-time-people-dashboard/issues)
-- **Feature Requests**: [Start a discussion](https://github.com/yourusername/real-time-people-dashboard/discussions)
-- **Documentation**: Check the [Wiki](https://github.com/yourusername/real-time-people-dashboard/wiki)
-
 ---
 
 <div align="center">
-
-**Made with ❤️ by [Your Name](https://github.com/yourusername)**
 
 ![Stars](https://img.shields.io/github/stars/yourusername/real-time-people-dashboard?style=social)
 ![Forks](https://img.shields.io/github/forks/yourusername/real-time-people-dashboard?style=social)
