@@ -56,6 +56,8 @@ The project is designed with the following components:
 - Cassandra
 - PostgreSQL
 - Docker
+- Flask
+- React
 
 ## Getting Started
 
