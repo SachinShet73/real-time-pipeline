@@ -389,84 +389,7 @@ curl -H "Connection: Upgrade" -H "Upgrade: websocket" http://localhost:5001/sock
 ```
 </details>
 
-## 📊 Features
 
-### Real-Time Dashboard
-- ![Real-time](https://img.shields.io/badge/✅-Real--time%20data%20updates-green?style=flat-square)
-- ![Statistics](https://img.shields.io/badge/✅-Live%20statistics%20tracking-green?style=flat-square)
-- ![WebSocket](https://img.shields.io/badge/✅-WebSocket%20connections-green?style=flat-square)
-- ![Responsive](https://img.shields.io/badge/✅-Responsive%20design-green?style=flat-square)
-- ![Notifications](https://img.shields.io/badge/✅-Toast%20notifications-green?style=flat-square)
-- ![Animations](https://img.shields.io/badge/✅-Smooth%20animations-green?style=flat-square)
-
-### Data Pipeline
-- ![API](https://img.shields.io/badge/✅-Random%20User%20API%20integration-green?style=flat-square)
-- ![Streaming](https://img.shields.io/badge/✅-Kafka%20message%20streaming-green?style=flat-square)
-- ![Processing](https://img.shields.io/badge/✅-Spark%20stream%20processing-green?style=flat-square)
-- ![Storage](https://img.shields.io/badge/✅-Cassandra%20data%20storage-green?style=flat-square)
-- ![Orchestration](https://img.shields.io/badge/✅-Airflow%20orchestration-green?style=flat-square)
-
-### Production Ready
-- ![Containerization](https://img.shields.io/badge/✅-Docker%20containerization-green?style=flat-square)
-- ![Health Checks](https://img.shields.io/badge/✅-Automated%20health%20checks-green?style=flat-square)
-- ![Load Balancing](https://img.shields.io/badge/✅-Nginx%20reverse%20proxy-green?style=flat-square)
-- ![Configuration](https://img.shields.io/badge/✅-Environment%20configuration-green?style=flat-square)
-- ![Logging](https://img.shields.io/badge/✅-Centralized%20logging-green?style=flat-square)
-- ![Monitoring](https://img.shields.io/badge/✅-Service%20monitoring-green?style=flat-square)
-
-## 🔒 Security Considerations
-
-### Current Security Features
-- ![CORS](https://img.shields.io/badge/✅-CORS%20protection-green?style=flat-square)
-- ![XSS](https://img.shields.io/badge/✅-XSS%20protection%20headers-green?style=flat-square)
-- ![Content Type](https://img.shields.io/badge/✅-Content%20type%20validation-green?style=flat-square)
-- ![Network](https://img.shields.io/badge/✅-Docker%20network%20isolation-green?style=flat-square)
-
-### Production Security Recommendations
-- [ ] Change default passwords in production
-- [ ] Implement SSL/TLS certificates
-- [ ] Add authentication and authorization
-- [ ] Enable Kafka security features
-- [ ] Implement rate limiting
-- [ ] Add input validation and sanitization
-- [ ] Set up monitoring and alerting
-- [ ] Regular security updates
-
-## 📈 Performance & Scaling
-
-### Current Performance
-- ![Throughput](https://img.shields.io/badge/Throughput-1000%20records%2Fmin-yellow?style=flat-square)
-- ![Latency](https://img.shields.io/badge/Latency-%3C100ms-green?style=flat-square)
-- ![Memory](https://img.shields.io/badge/Memory-~6GB-orange?style=flat-square)
-- ![CPU](https://img.shields.io/badge/CPU-~40%25-green?style=flat-square)
-
-### Scaling Options
-
-**Horizontal Scaling:**
-- Add more Spark workers
-- Scale Kafka partitions
-- Deploy Cassandra cluster
-- Load balance frontend instances
-
-**Vertical Scaling:**
-- Increase container memory limits
-- Optimize Spark configurations
-- Database query optimization
-- Implement caching layer
-
-### Performance Tuning
-
-```yaml
-# docker-compose.yml - Memory allocation example
-services:
-  spark-streaming:
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
-```
 
 ## 🧪 Testing
 
@@ -493,24 +416,3 @@ pip install locust
 locust -f tests/load_test.py --host=http://localhost:5001
 ```
 
-## 🤝 Contributing
-
-![Contributors](https://img.shields.io/badge/contributors-welcome-brightgreen?style=flat-square)
-![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)
-
-1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make changes and test thoroughly**
-4. **Commit changes**: `git commit -m 'Add amazing feature'`
-5. **Push to branch**: `git push origin feature/amazing-feature`
-6. **Open Pull Request**
-
----
-
-<div align="center">
-
-![Stars](https://img.shields.io/github/stars/yourusername/real-time-people-dashboard?style=social)
-![Forks](https://img.shields.io/github/forks/yourusername/real-time-people-dashboard?style=social)
-![Watchers](https://img.shields.io/github/watchers/yourusername/real-time-people-dashboard?style=social)
-
-</div>
