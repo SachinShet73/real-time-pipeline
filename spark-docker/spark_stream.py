@@ -75,7 +75,7 @@ def create_spark_connection():
             .appName('SparkDataStreaming') \
             .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
                                            "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1") \
-            .config('spark.cassandra.connection.host', 'localhost') \
+            .config('spark.cassandra.connection.host', 'cassandra') \
             .getOrCreate()
 
         s_conn.sparkContext.setLogLevel("ERROR")
@@ -91,7 +91,7 @@ def connect_to_kafka(spark_conn):
     try:
         spark_df = spark_conn.readStream \
             .format('kafka') \
-            .option('kafka.bootstrap.servers', 'localhost:9092') \
+            .option('kafka.bootstrap.servers', 'broker:29092') \
             .option('subscribe', 'users_created') \
             .option('startingOffsets', 'earliest') \
             .load()
@@ -105,7 +105,7 @@ def connect_to_kafka(spark_conn):
 def create_cassandra_connection():
     try:
         # connecting to the cassandra cluster
-        cluster = Cluster(['localhost'])
+        cluster = Cluster(['cassandra'])
 
         cas_session = cluster.connect()
 
@@ -116,8 +116,9 @@ def create_cassandra_connection():
 
 
 def create_selection_df_from_kafka(spark_df):
+    from pyspark.sql.functions import expr
+    
     schema = StructType([
-        StructField("id", StringType(), False),
         StructField("first_name", StringType(), False),
         StructField("last_name", StringType(), False),
         StructField("gender", StringType(), False),
@@ -125,13 +126,15 @@ def create_selection_df_from_kafka(spark_df):
         StructField("post_code", StringType(), False),
         StructField("email", StringType(), False),
         StructField("username", StringType(), False),
+        StructField("dob", StringType(), True),
         StructField("registered_date", StringType(), False),
         StructField("phone", StringType(), False),
         StructField("picture", StringType(), False)
     ])
 
     sel = spark_df.selectExpr("CAST(value AS STRING)") \
-        .select(from_json(col('value'), schema).alias('data')).select("data.*")
+        .select(from_json(col('value'), schema).alias('data')).select("data.*") \
+        .withColumn("id", expr("uuid()"))
     print(sel)
 
     return sel

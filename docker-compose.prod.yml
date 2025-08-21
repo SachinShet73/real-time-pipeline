@@ -1,0 +1,40 @@
+services:
+  people-dashboard-backend:
+    restart: unless-stopped
+    environment:
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+    # Remove volume mounts for production
+
+  people-dashboard-frontend:
+    restart: unless-stopped
+    # Remove volume mounts for production
+
+  cassandra_db:
+    restart: unless-stopped
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+
+  postgres:
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  spark-streaming:
+    restart: unless-stopped
+
+  broker:
+    restart: unless-stopped
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  zookeeper:
+    restart: unless-stopped
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+
+volumes:
+  cassandra_data:
+  postgres_data:
+  kafka_data:
+  zookeeper_data:

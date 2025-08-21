@@ -1,0 +1,11 @@
+services:
+  people-dashboard-backend:
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./backend:/app
+
+  people-dashboard-frontend:
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
