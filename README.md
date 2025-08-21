@@ -21,15 +21,60 @@ A comprehensive real-time data pipeline that fetches people data from Random Use
 ## 🏗️ Architecture Overview
 
 ```mermaid
-graph LR
-    A[Random User API] --> B[Apache Airflow]
-    B --> C[Apache Kafka]
-    C --> D[Apache Spark Streaming]
-    D --> E[Apache Cassandra]
-    E --> F[Flask API]
-    F --> G[Web Dashboard]
-    F --> H[WebSocket]
-    H --> G
+graph TB
+    subgraph "External Data Source"
+        A[Random User API]
+    end
+    
+    subgraph "Orchestration Layer"
+        B[Apache Airflow]
+        B --> B1[DAG Scheduler]
+        B --> B2[Task Management]
+        B --> B3[Service Monitoring]
+    end
+    
+    subgraph "Streaming Infrastructure"
+        C[Apache Kafka]
+        D[Apache Spark Streaming]
+        E[Apache Cassandra]
+    end
+    
+    subgraph "Application Layer"
+        F[Flask API + SocketIO]
+        G[Nginx Web Server]
+        H[Web Dashboard]
+    end
+    
+    subgraph "Supporting Services"
+        I[PostgreSQL]
+        J[Zookeeper]
+        K[Schema Registry]
+        L[Control Center]
+    end
+    
+    A --> B
+    B -.->|orchestrates| C
+    B -.->|manages| D
+    B -.->|monitors| E
+    B -.->|supervises| F
+    
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    F -.->|WebSocket| H
+    
+    B -.->|metadata| I
+    C -.->|coordination| J
+    C -.->|schema mgmt| K
+    C -.->|monitoring| L
+    
+    style B fill:#e1f5fe
+    style B1 fill:#e1f5fe
+    style B2 fill:#e1f5fe
+    style B3 fill:#e1f5fe
 ```
 
 ### Technology Stack
