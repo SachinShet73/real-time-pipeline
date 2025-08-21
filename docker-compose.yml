@@ -122,7 +122,7 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags  
       - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
-      #- ./requirements.txt:/opt/airflow/requirements.txt
+      - ./requirements.txt:/opt/airflow/requirements.txt
     ports:
       - "8080:8080"
     healthcheck:
@@ -140,7 +140,7 @@ services:
         condition: service_healthy
     volumes:
       - ./dags:/opt/airflow/dags
-      #- ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
       - ./requirements.txt:/opt/airflow/requirements.txt
     environment:
       - LOAD_EX=n
@@ -184,7 +184,7 @@ services:
       SPARK_MASTER_URL: spark://spark-master:7077
     networks:
       - confluent
-      
+
   cassandra_db:
     image: cassandra:latest
     container_name: cassandra
