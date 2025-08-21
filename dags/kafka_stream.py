@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging  # MISSING IMPORT
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
@@ -40,26 +41,38 @@ def format_data(res):
 
 def stream_data():
     import json
-
     from kafka import KafkaProducer
     import time 
 
+    # MOVED: This line was misplaced
     res = get_data()
     res = format_data(res)
     print(json.dumps(res,indent=3))
     
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
+    producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)
+    curr_time = time.time()
 
-    producer.send('users_created', json.dumps(res).encode('utf-8'))
+    while True:  # FIXED: 'true' -> 'True'
+        if time.time() > curr_time + 60:
+            break
+        
+        try:
+            res = get_data()
+            res = format_data(res)
+            producer.send('users_created', json.dumps(res).encode('utf-8'))
 
-""" with DAG('user_automation',
+        except Exception as e:  # FIXED: 'exception' -> 'Exception'
+            logging.error(f'An error occurred: {e}')  # FIXED: f-string syntax
+            continue
+
+    
+
+with DAG('user_automation',
          default_args=default_args,
          schedule_interval='@daily',
-         catchup = False)as dag:
+         catchup=False) as dag:  # FIXED: Missing space and extra parenthesis
 
     streaming_task = PythonOperator(
         task_id='stream_data_from_api',
         python_callable=stream_data
-    ) """
-
-stream_data()
+    )

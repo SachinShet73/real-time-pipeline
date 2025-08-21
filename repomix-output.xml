@@ -1,0 +1,466 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+dags/
+  kafka_stream.py
+script/
+  entrypoint.sh
+docker-compose.yml
+requirements.txt
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="dags/kafka_stream.py">
+from datetime import datetime
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+
+default_args = {
+    'owner': 'airscholar',
+    'start_date': datetime(2025,8,20,00)
+}
+
+def get_data():
+    import json
+    import requests
+
+    res = requests.get('https://randomuser.me/api/')
+    print(res.json())
+
+    res = res.json()
+    res = res['results'][0]
+    return res
+
+def format_data(res):
+    data = {}
+    location = res['location']
+    #data['id'] = uuid.uuid4()
+    data['first_name'] = res['name']['first']
+    data['last_name'] = res['name']['last']
+    data['gender'] = res['gender']
+    data['address'] = f"{str(location['street']['number'])} {location['street']['name']}, " \
+                      f"{location['city']}, {location['state']}, {location['country']}"
+    data['post_code'] = location['postcode']
+    data['email'] = res['email']
+    data['username'] = res['login']['username']
+    data['dob'] = res['dob']['date']
+    data['registered_date'] = res['registered']['date']
+    data['phone'] = res['phone']
+    data['picture'] = res['picture']['medium']
+
+    return data
+
+
+def stream_data():
+    import json
+
+    from kafka import KafkaProducer
+    import time 
+
+    
+    print(json.dumps(res,indent=3))
+    
+    producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
+    curr_time = time.time( )
+
+    while true:
+        if time.time() > curr_time + 60:
+            break
+        
+        try:
+            res = get_data()
+            res = format_data(res)
+            producer.send('users_created', json.dumps(res).encode('utf-8'))
+
+        except exception as e:
+            logging.error('An error occured: {e}')
+            continue
+
+    
+
+with DAG('user_automation',
+         default_args=default_args,
+         schedule_interval='@daily',
+         catchup = False)as dag:
+
+    streaming_task = PythonOperator(
+        task_id='stream_data_from_api',
+        python_callable=stream_data
+    )
+</file>
+
+<file path="script/entrypoint.sh">
+#!/bin/bash
+set -e
+
+if [ -e "/opt/airflow/requirements.txt" ]; then
+  $(command python) pip install --upgrade pip
+  $(command -v pip) install --user -r requirements.txt
+fi
+
+if [ ! -f "/opt/airflow/airflow.db" ]; then
+  airflow db init && \
+  airflow users create \
+    --username admin \
+    --firstname admin \
+    --lastname admin \
+    --role Admin \
+    --email admin@example.com \
+    --password admin
+fi
+
+$(command -v airflow) db upgrade
+
+exec airflow webserver
+</file>
+
+<file path="docker-compose.yml">
+version: '3'
+
+services:
+  zookeeper:
+      image: confluentinc/cp-zookeeper:7.4.0
+      hostname: zookeeper
+      container_name: zookeeper
+      ports:
+        - "2181:2181"
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+      healthcheck:
+        test: ['CMD', 'bash', '-c', "echo 'ruok' | nc localhost 2181"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+      networks:
+        - confluent
+
+  broker:
+    image: confluentinc/cp-server:7.4.0
+    hostname: broker
+    container_name: broker
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+    networks:
+      - confluent
+    healthcheck:
+      test: [ "CMD", "bash", "-c", 'nc -z localhost 9092' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.0
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      broker:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    networks:
+      - confluent
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.4.0
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      broker:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+      PORT: 9021
+    networks:
+      - confluent
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  webserver:
+    image: apache/airflow:2.6.0-python3.9
+    command: webserver
+    entrypoint: ['/opt/airflow/script/entrypoint.sh']
+    depends_on:
+      - postgres
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Sequential
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./requirements.txt:/opt/airflow/requirements.txt
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ['CMD-SHELL', "[ -f /opt/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - confluent
+
+  scheduler:
+    image: apache/airflow:2.6.0-python3.9
+    depends_on:
+      webserver:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./requirements.txt:/opt/airflow/requirements.txt
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Sequential
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+    command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
+    networks:
+      - confluent
+
+  postgres:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - confluent
+networks:
+  confluent:
+</file>
+
+<file path="requirements.txt">
+aiohttp==3.8.5
+aiosignal==1.3.1
+alembic==1.12.0
+anyio==4.0.0
+apache-airflow==2.7.0
+apache-airflow-providers-common-sql==1.7.1
+apache-airflow-providers-ftp==3.5.1
+apache-airflow-providers-http==4.5.1
+apache-airflow-providers-imap==3.3.1
+apache-airflow-providers-sqlite==3.4.3
+apispec==6.3.0
+argcomplete==3.1.1
+asgiref==3.7.2
+async-timeout==4.0.3
+attrs==23.1.0
+Babel==2.12.1
+backoff==2.2.1
+blinker==1.6.2
+cachelib==0.9.0
+cassandra-driver==3.28.0
+cattrs==23.1.2
+certifi==2023.7.22
+cffi==1.15.1
+charset-normalizer==3.2.0
+click==8.1.7
+clickclick==20.10.2
+colorama==0.4.6
+colorlog==4.8.0
+ConfigUpdater==3.1.1
+connexion==2.14.2
+cron-descriptor==1.4.0
+croniter==1.4.1
+cryptography==41.0.3
+Deprecated==1.2.14
+dill==0.3.7
+dnspython==2.4.2
+docutils==0.20.1
+email-validator==1.3.1
+Flask==2.2.5
+Flask-AppBuilder==4.3.3
+Flask-Babel==2.0.0
+Flask-Caching==2.0.2
+Flask-JWT-Extended==4.5.2
+Flask-Limiter==3.5.0
+Flask-Login==0.6.2
+Flask-Session==0.5.0
+Flask-SQLAlchemy==2.5.1
+Flask-WTF==1.1.1
+frozenlist==1.4.0
+geomet==0.2.1.post1
+google-re2==1.1
+googleapis-common-protos==1.60.0
+graphviz==0.20.1
+grpcio==1.57.0
+gunicorn==21.2.0
+h11==0.14.0
+httpcore==0.17.3
+httpx==0.24.1
+idna==3.4
+importlib-resources==6.0.1
+inflection==0.5.1
+itsdangerous==2.1.2
+Jinja2==3.1.2
+jsonschema==4.19.0
+jsonschema-specifications==2023.7.1
+kafka-python==2.0.2
+lazy-object-proxy==1.9.0
+limits==3.6.0
+linkify-it-py==2.0.2
+lockfile==0.12.2
+Mako==1.2.4
+Markdown==3.4.4
+markdown-it-py==3.0.0
+MarkupSafe==2.1.3
+marshmallow==3.20.1
+marshmallow-oneofschema==3.0.1
+marshmallow-sqlalchemy==0.26.1
+mdit-py-plugins==0.4.0
+mdurl==0.1.2
+multidict==6.0.4
+opentelemetry-api==1.15.0
+opentelemetry-exporter-otlp==1.15.0
+opentelemetry-exporter-otlp-proto-grpc==1.15.0
+opentelemetry-exporter-otlp-proto-http==1.15.0
+opentelemetry-proto==1.15.0
+opentelemetry-sdk==1.15.0
+opentelemetry-semantic-conventions==0.36b0
+ordered-set==4.1.0
+packaging==23.1
+pathspec==0.11.2
+pendulum==2.1.2
+pluggy==1.3.0
+prison==0.2.1
+protobuf==4.24.2
+psutil==5.9.5
+py4j==0.10.9.7
+pycparser==2.21
+pydantic==1.10.12
+Pygments==2.16.1
+PyJWT==2.8.0
+# pyspark==3.4.1
+python-daemon==3.0.1
+python-dateutil==2.8.2
+python-nvd3==0.15.0
+python-slugify==8.0.1
+pytz==2023.3
+pytzdata==2020.1
+PyYAML==6.0.1
+referencing==0.30.2
+requests==2.31.0
+requests-toolbelt==1.0.0
+rfc3339-validator==0.1.4
+rich==13.5.2
+rich-argparse==1.3.0
+rpds-py==0.10.0
+setproctitle==1.3.2
+six==1.16.0
+sniffio==1.3.0
+spark==0.2.1
+SQLAlchemy==1.4.49
+SQLAlchemy-JSONField==1.0.1.post0
+SQLAlchemy-Utils==0.41.1
+sqlparse==0.4.4
+tabulate==0.9.0
+tenacity==8.2.3
+termcolor==2.3.0
+text-unidecode==1.3
+typing_extensions==4.7.1
+uc-micro-py==1.0.2
+unicodecsv==0.14.1
+urllib3==2.0.4
+Werkzeug==2.2.3
+wrapt==1.15.0
+WTForms==3.0.1
+yarl==1.9.2
+</file>
+
+</files>
