@@ -198,6 +198,12 @@ services:
       - CASSANDRA_PASSWORD=cassandra
     networks:
       - confluent
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   people-dashboard-backend:
     build: ./backend
@@ -224,7 +230,7 @@ services:
     container_name: spark-streaming
     depends_on:
       cassandra_db:
-        condition: service_started
+        condition: service_healthy
       broker:
         condition: service_healthy
     networks:
